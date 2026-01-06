@@ -19,6 +19,18 @@ CREATE OR REPLACE TABLE dim_date (
     is_weekend BOOLEAN
 );
 
+CREATE OR REPLACE TABLE dim_time (
+    time_key INT PRIMARY KEY,         -- Format: HHMMSS (e.g., 143005 for 14:30:05)
+    full_time TIME NOT NULL,          -- The actual time object
+    hour_24 INT,                      -- 0-23
+    hour_12 INT,                      -- 1-12
+    minute INT,                       -- 0-59
+    second INT,                       -- 0-59
+    am_pm CHAR(2),                    -- AM/PM
+    day_part VARCHAR(20),             -- Morning, Afternoon, Evening, Night
+    is_business_hours BOOLEAN         -- True if between 9 AM and 5 PM
+);
+
 -- 2. Seller Dimension
 CREATE OR REPLACE TABLE dim_seller (
     seller_key INT IDENTITY(1,1) PRIMARY KEY, -- Auto PK
@@ -55,25 +67,27 @@ CREATE OR REPLACE TABLE dim_payment_method (
     method_name VARCHAR(50) 
 );
 
--- 6. Fact Orders (Order Item Grain)
+-- 6. Fact Orders (Updated with Time Key)
 CREATE OR REPLACE TABLE fact_orders (
-    fact_orders_key INT IDENTITY(1,1) PRIMARY KEY, -- Auto PK for this fact
-    order_id VARCHAR(50) NOT NULL,                 -- Degenerate Dimension (Join Key)
+    fact_orders_key INT IDENTITY(1,1) PRIMARY KEY,
+    order_id VARCHAR(50) NOT NULL,
     order_item_id INT,
     product_key INT REFERENCES dim_product(product_key),
     seller_key INT REFERENCES dim_seller(seller_key),
     user_key INT REFERENCES dim_user(user_key),
     date_key INT REFERENCES dim_date(date_key),
+    time_key INT REFERENCES dim_time(time_key), 
     price NUMBER(15,2),
     shipping_cost NUMBER(15,2)
 );
 
--- 7. Fact Payments (Payment Transaction Grain)
+-- 7. Fact Payments (Updated with Time Key)
 CREATE OR REPLACE TABLE fact_payment (
-    fact_payment_key INT IDENTITY(1,1) PRIMARY KEY, -- Auto PK for this fact
-    order_id VARCHAR(50) NOT NULL,                  -- Degenerate Dimension (Join Key)
+    fact_payment_key INT IDENTITY(1,1) PRIMARY KEY,
+    order_id VARCHAR(50) NOT NULL,
     payment_method_key INT REFERENCES dim_payment_method(payment_method_key),
     date_key INT REFERENCES dim_date(date_key),
+    time_key INT REFERENCES dim_time(time_key), 
     payment_sequential INT,
     payment_installments INT,
     payment_value NUMBER(15,2)
