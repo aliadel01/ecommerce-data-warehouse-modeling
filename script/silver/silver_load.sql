@@ -1,0 +1,112 @@
+USE ECOMMERCE_DW.SILVER;
+
+-- ============================
+-- USERS
+-- ============================
+INSERT INTO USERS
+SELECT DISTINCT
+    TRIM(USER_NAME),
+    CUSTOMER_ZIP_CODE,
+    TRIM(CUSTOMER_CITY),
+    TRIM(CUSTOMER_STATE)
+FROM ECOMMERCE_DW.BRONZE.USERS;
+
+-- ============================
+-- SELLERS
+-- ============================
+INSERT INTO SELLERS
+SELECT DISTINCT
+    SELLER_ID,
+    SELLER_ZIP_CODE,
+    TRIM(SELLER_CITY),
+    TRIM(SELLER_STATE)
+FROM ECOMMERCE_DW.BRONZE.SELLERS;
+
+-- ============================
+-- PRODUCTS
+-- ============================
+INSERT INTO PRODUCTS
+SELECT DISTINCT
+    PRODUCT_ID,
+    TRIM(PRODUCT_CATEGORY),
+    PRODUCT_NAME_LENGHT,
+    PRODUCT_DESCRIPTION_LENGHT,
+    PRODUCT_PHOTOS_QTY,
+    PRODUCT_WEIGHT_G,
+    PRODUCT_LENGTH_CM,
+    PRODUCT_HEIGHT_CM,
+    PRODUCT_WIDTH_CM
+FROM ECOMMERCE_DW.BRONZE.PRODUCTS;
+
+-- ============================
+-- ORDERS
+-- Deduplicate by keeping the latest order_date per ORDER_ID
+-- ============================
+INSERT INTO ORDERS
+SELECT ORDER_ID,
+       TRIM(USER_NAME),
+       TRIM(ORDER_STATUS),
+       ORDER_DATE,
+       ORDER_APPROVED_DATE,
+       PICKUP_DATE,
+       DELIVERED_DATE,
+       ESTIMATED_TIME_DELIVERY
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY ORDER_ID ORDER BY ORDER_DATE DESC) AS rn
+    FROM ECOMMERCE_DW.BRONZE.ORDERS
+) t
+WHERE rn = 1;
+
+-- ============================
+-- ORDER_ITEMS
+-- Deduplicate by ORDER_ID + ORDER_ITEM_ID
+-- ============================
+INSERT INTO ORDER_ITEMS
+SELECT ORDER_ID,
+       ORDER_ITEM_ID,
+       PRODUCT_ID,
+       SELLER_ID,
+       PICKUP_LIMIT_DATE,
+       PRICE,
+       SHIPPING_COST
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY ORDER_ID, ORDER_ITEM_ID ORDER BY ORDER_ID) AS rn
+    FROM ECOMMERCE_DW.BRONZE.ORDER_ITEMS
+) t
+WHERE rn = 1;
+
+-- ============================
+-- PAYMENTS
+-- Deduplicate by ORDER_ID + PAYMENT_SEQUENTIAL
+-- ============================
+INSERT INTO PAYMENTS
+SELECT ORDER_ID,
+       PAYMENT_SEQUENTIAL,
+       TRIM(PAYMENT_TYPE),
+       PAYMENT_INSTALLMENTS,
+       PAYMENT_VALUE
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY ORDER_ID, PAYMENT_SEQUENTIAL ORDER BY ORDER_ID) AS rn
+    FROM ECOMMERCE_DW.BRONZE.PAYMENTS
+) t
+WHERE rn = 1;
+
+-- ============================
+-- FEEDBACK
+-- Deduplicate by FEEDBACK_ID
+-- ============================
+INSERT INTO FEEDBACK
+SELECT FEEDBACK_ID,
+       ORDER_ID,
+       FEEDBACK_SCORE,
+       FEEDBACK_FORM_SENT_DATE,
+       FEEDBACK_ANSWER_DATE
+FROM (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY FEEDBACK_ID ORDER BY FEEDBACK_FORM_SENT_DATE DESC) AS rn
+    FROM ECOMMERCE_DW.BRONZE.FEEDBACK
+) t
+WHERE rn = 1;
