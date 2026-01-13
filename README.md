@@ -1,2 +1,2 @@
 # ecommerce-data-warehouse-modeling
-![Diagram](Untitled.png)
+![Diagram](docs/star_schema.jpeg)
