@@ -93,7 +93,7 @@ CROSS JOIN minutes m
 ORDER BY hour, minute;
 
 INSERT INTO dim_time (time_key, hour, minute, full_time)
-VALUES (-1, 0, 0, '00:00:00');
+VALUES (-1, -1, -1, TO_TIME('00:00:00'));
 
 
 -- 6. dim_payment_method
