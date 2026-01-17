@@ -1,2 +1,2 @@
-# ecommerce-data-warehouse-modeling
-![Diagram](docs/Diagram.png)
+# ecommerce-modeling-analytics
+![Diagram](data_engineering/diagram_workflow.png)
