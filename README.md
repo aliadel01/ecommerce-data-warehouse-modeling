@@ -85,4 +85,5 @@ The Power BI dashboard summarizes key KPIs and trends:
 
 ---
 
+## [Project Reference ->](https://github.com/ahmedshaaban1999/Data_Engineering_Mentorship/tree/main/level_1/Data_Modeling/projects/ecommerce)
 Built with ❤️ by **Ali Adel**  
