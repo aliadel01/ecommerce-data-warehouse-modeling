@@ -62,7 +62,7 @@ The project follows a layered data warehouse design:
 ## 📊 Dashboard Preview
 The Power BI dashboard summarizes key KPIs and trends:
 
-![Dashboard](analytics/dashboard/overview_dashboard.png)
+![Dashboard](analytics/dashboard/overview_dashboard.gif)
 
 ---
 
